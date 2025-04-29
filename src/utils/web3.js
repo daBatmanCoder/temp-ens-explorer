@@ -1,23 +1,68 @@
 import { ethers } from 'ethers';
 import { NETWORK_CONFIG } from './config';
 
-// Initialize provider with better error handling
+// Enhanced provider with better error handling and retry mechanism
 export const getProvider = () => {
   try {
     if (typeof window !== 'undefined' && window.ethereum) {
+      // For browsers with web3 wallets
       return new ethers.providers.Web3Provider(window.ethereum);
     }
-    // Return a JsonRpcProvider for server-side rendering with timeout and retries
-    const provider = new ethers.providers.JsonRpcProvider(NETWORK_CONFIG.rpcUrl);
     
-    // Set a timeout for RPC requests
-    provider.pollingInterval = 15000; // 15 seconds
+    // Create a JsonRpcProvider with fallback mechanism
+    const createProvider = () => {
+      const provider = new ethers.providers.JsonRpcProvider(NETWORK_CONFIG.rpcUrl);
+      
+      // Set a timeout for RPC requests
+      provider.pollingInterval = 15000; // 15 seconds
+      
+      // Add custom retry logic for failed requests
+      const originalSend = provider.send;
+      provider.send = async (method, params) => {
+        let retries = 3;
+        let lastError;
+        
+        while (retries > 0) {
+          try {
+            return await originalSend.call(provider, method, params);
+          } catch (error) {
+            lastError = error;
+            retries--;
+            // Add exponential backoff wait between retries
+            if (retries > 0) {
+              await new Promise(resolve => setTimeout(resolve, (3 - retries) * 1000));
+            }
+          }
+        }
+        
+        // If all retries failed, throw a user-friendly error
+        const error = new Error("Network request failed after multiple attempts");
+        error.originalError = lastError;
+        throw error;
+      };
+      
+      return provider;
+    };
     
-    return provider;
+    return createProvider();
   } catch (error) {
     console.error("Failed to initialize provider:", error);
-    // Return a fallback provider as last resort
-    return new ethers.providers.JsonRpcProvider(NETWORK_CONFIG.rpcUrl);
+    
+    // Return a minimal fallback provider that logs errors but doesn't crash
+    const fallbackProvider = new ethers.providers.JsonRpcProvider(NETWORK_CONFIG.rpcUrl);
+    
+    // Wrap all methods to prevent crashes
+    const originalSend = fallbackProvider.send;
+    fallbackProvider.send = async (method, params) => {
+      try {
+        return await originalSend.call(fallbackProvider, method, params);
+      } catch (error) {
+        console.error("Fallback provider request failed:", error);
+        throw new Error("Network request failed. Please try again later.");
+      }
+    };
+    
+    return fallbackProvider;
   }
 };
 

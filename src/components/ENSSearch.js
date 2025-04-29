@@ -100,16 +100,16 @@ const SearchButton = styled.button`
 `;
 
 const ErrorMessage = styled.div`
-  color: #f87171;
+  color: #f8c0c0;
   padding: 16px;
-  background-color: rgba(239, 68, 68, 0.2);
+  background-color: rgba(41, 35, 46, 0.7);
   border-radius: 12px;
   margin-top: 20px;
   font-size: 14px;
   display: flex;
   align-items: center;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
-  border-left: 4px solid #ef4444;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-left: 4px solid #805ad5;
   
   svg {
     margin-right: 12px;
@@ -146,6 +146,24 @@ const SearchTips = styled.div`
   }
 `;
 
+const RetryButton = styled.button`
+  margin-left: 16px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.1);
+  }
+`;
+
 const ENSSearch = ({ onSearch, loading, error }) => {
   const [inputValue, setInputValue] = useState('');
   const [showTips, setShowTips] = useState(false);
@@ -167,6 +185,12 @@ const ENSSearch = ({ onSearch, loading, error }) => {
     if (inputValue.trim()) {
       onSearch(inputValue.trim());
       setShowTips(false);
+    }
+  };
+
+  const handleRetry = () => {
+    if (inputValue.trim()) {
+      onSearch(inputValue.trim());
     }
   };
 
@@ -237,9 +261,12 @@ const ENSSearch = ({ onSearch, loading, error }) => {
       {error && (
         <ErrorMessage>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 8V12M12 16H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12 8V12M12 16H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="#805ad5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           {error}
+          <RetryButton onClick={handleRetry}>
+            Try Again
+          </RetryButton>
         </ErrorMessage>
       )}
     </SearchContainer>

@@ -29,6 +29,27 @@ export const useENSSearch = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Helper function to provide user-friendly error messages
+  const handleError = (error) => {
+    console.error('Error searching ENS name:', error);
+    
+    // Check for common contract error patterns
+    if (error.message && error.message.includes('call revert exception')) {
+      return "We couldn't fetch this domain information at the moment. Please try again later.";
+    }
+    
+    if (error.code === 'NETWORK_ERROR' || error.message?.includes('network')) {
+      return "Network connection issue. Please check your internet connection and try again.";
+    }
+    
+    if (error.code === 'TIMEOUT' || error.message?.includes('timeout')) {
+      return "Request timed out. The Taraxa network might be experiencing high load. Please try again.";
+    }
+    
+    // Default user-friendly message
+    return "Something went wrong while searching. Please try again later.";
+  };
+
   const searchName = async (name) => {
     if (!name) return;
     
@@ -158,8 +179,8 @@ export const useENSSearch = () => {
       
       setSearchResult(result);
     } catch (error) {
-      console.error('Error searching ENS name:', error);
-      setError(error.message || 'Error searching ENS name');
+      // Use the user-friendly error handler
+      setError(handleError(error));
     } finally {
       setLoading(false);
     }
