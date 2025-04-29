@@ -1,31 +1,54 @@
 import { ethers } from 'ethers';
 import { NETWORK_CONFIG } from './config';
 
-// Enhanced provider with better error handling and retry mechanism
+// Create a FallbackProvider with multiple RPC endpoints for better reliability
 export const getProvider = () => {
   try {
+    // For browsers with web3 wallets
     if (typeof window !== 'undefined' && window.ethereum) {
-      // For browsers with web3 wallets
       return new ethers.providers.Web3Provider(window.ethereum);
     }
     
-    // Create a JsonRpcProvider with fallback mechanism
-    const createProvider = () => {
-    const provider = new ethers.providers.JsonRpcProvider(NETWORK_CONFIG.rpcUrl);
-    
-    // Set a timeout for RPC requests
-    provider.pollingInterval = 15000; // 15 seconds
+    // Create a provider with fallback URLs for better reliability
+    const createFallbackProvider = () => {
+      // Set up providers with all available RPC URLs
+      const providers = NETWORK_CONFIG.rpcUrls.map((url, index) => {
+        const provider = new ethers.providers.JsonRpcProvider(url);
+        return {
+          provider,
+          weight: 1, // Equal weight for all providers
+          priority: index + 1, // Lower index = higher priority
+          stallTimeout: 5000 // Wait 5s before considering the provider stalled
+        };
+      });
+      
+      // Use FallbackProvider if we have multiple providers
+      if (providers.length > 1) {
+        const fallbackProvider = new ethers.providers.FallbackProvider(
+          providers,
+          1 // Only need 1 provider to respond successfully
+        );
+        
+        // Set a reasonable timeout
+        fallbackProvider.pollingInterval = 15000; // 15 seconds
+        
+        return fallbackProvider;
+      }
+      
+      // Fallback to single provider if only one is available
+      const singleProvider = new ethers.providers.JsonRpcProvider(NETWORK_CONFIG.rpcUrl);
       
       // Add custom retry logic for failed requests
-      const originalSend = provider.send;
-      provider.send = async (method, params) => {
+      const originalSend = singleProvider.send;
+      singleProvider.send = async (method, params) => {
         let retries = 3;
         let lastError;
         
         while (retries > 0) {
           try {
-            return await originalSend.call(provider, method, params);
+            return await originalSend.call(singleProvider, method, params);
           } catch (error) {
+            console.warn(`RPC request failed, retries left: ${retries}`, error);
             lastError = error;
             retries--;
             // Add exponential backoff wait between retries
@@ -40,11 +63,11 @@ export const getProvider = () => {
         error.originalError = lastError;
         throw error;
       };
-    
-    return provider;
+      
+      return singleProvider;
     };
     
-    return createProvider();
+    return createFallbackProvider();
   } catch (error) {
     console.error("Failed to initialize provider:", error);
     

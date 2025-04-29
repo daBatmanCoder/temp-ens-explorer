@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import styled from 'styled-components';
 import { useENSSearch } from '../hooks/useENSSearch';
@@ -159,7 +159,39 @@ const App = () => {
   } = useENSSearch();
   
   const canvasRef = useRef(null);
+  const [searchAttempts, setSearchAttempts] = useState(0);
   
+  // Handler for search with auto-retry for failed searches
+  const handleSearch = (name) => {
+    setSearchTerm(name);
+    searchName(name);
+    
+    // Track search attempts for potential auto-retry
+    setSearchAttempts(prev => prev + 1);
+  };
+  
+  // Auto-retry mechanism for failed searches
+  useEffect(() => {
+    let retryTimeout;
+    
+    if (error && searchTerm && searchAttempts < 3) {
+      // Auto-retry after 3 seconds with increasing delay
+      const retryDelay = 3000 + (searchAttempts * 1000);
+      
+      console.log(`Will auto-retry search in ${retryDelay/1000} seconds...`);
+      
+      retryTimeout = setTimeout(() => {
+        console.log('Auto-retrying search...');
+        searchName(searchTerm);
+        setSearchAttempts(prev => prev + 1);
+      }, retryDelay);
+    }
+    
+    return () => {
+      if (retryTimeout) clearTimeout(retryTimeout);
+    };
+  }, [error, searchTerm, searchAttempts, searchName]);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
@@ -262,11 +294,6 @@ const App = () => {
       window.removeEventListener('resize', () => {});
     };
   }, []);
-
-  const handleSearch = (name) => {
-    setSearchTerm(name);
-    searchName(name);
-  };
 
   return (
     <AppContainer>

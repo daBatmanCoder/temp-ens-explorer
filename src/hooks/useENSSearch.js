@@ -28,26 +28,41 @@ export const useENSSearch = () => {
   const [searchResult, setSearchResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [currentProvider, setCurrentProvider] = useState(null);
 
   // Helper function to provide user-friendly error messages
   const handleError = (error) => {
     console.error('Error searching ENS name:', error);
     
+    // Check for specific call revert exception that happens with registry contract
+    if (error.message && error.message.includes('call revert exception') && 
+        error.message.includes('owner(bytes32)')) {
+      return "The Taraxa network API is currently experiencing connection issues. We're automatically trying alternative endpoints. Please try again in a moment.";
+    }
+    
     // Check for common contract error patterns
     if (error.message && error.message.includes('call revert exception')) {
-      return "We couldn't fetch this domain information at the moment. Please try again later.";
+      return "We couldn't fetch this domain information at the moment. Our system is trying alternative network connections. Please try your search again.";
     }
     
     if (error.code === 'NETWORK_ERROR' || error.message?.includes('network')) {
-      return "Network connection issue. Please check your internet connection and try again.";
+      return "Network connection issue. The app is attempting to use backup connections. Please try your search again in a few seconds.";
     }
     
     if (error.code === 'TIMEOUT' || error.message?.includes('timeout')) {
-      return "Request timed out. The Taraxa network might be experiencing high load. Please try again.";
+      return "Request timed out. The Taraxa network might be experiencing high load. We're switching to backup connections. Please try again.";
     }
     
     // Default user-friendly message
-    return "Something went wrong while searching. Please try again later.";
+    return "Something went wrong while searching. We're attempting to use alternative connections. Please try again in a moment.";
+  };
+
+  // Create a fresh provider for each search attempt
+  const getNewProvider = () => {
+    // We'll create a new provider instance each time to avoid cached connections
+    const provider = getProvider();
+    setCurrentProvider(provider);
+    return provider;
   };
 
   const searchName = async (name) => {
@@ -74,7 +89,8 @@ export const useENSSearch = () => {
         return;
       }
       
-      const provider = getProvider();
+      // Get a fresh provider for this request
+      const provider = getNewProvider();
       
       // Create contract instances
       const registryContract = new ethers.Contract(
@@ -87,8 +103,14 @@ export const useENSSearch = () => {
         provider
       );
       
-      // Get owner
-      const owner = await registryContract.owner(node);
+      // Add a timeout to the owner call to prevent hanging
+      const ownerPromise = registryContract.owner(node);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timed out')), 15000)
+      );
+      
+      // Get owner with timeout
+      const owner = await Promise.race([ownerPromise, timeoutPromise]);
       const available = owner === ethers.constants.AddressZero;
       
       let result = {

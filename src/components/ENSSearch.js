@@ -190,6 +190,7 @@ const ENSSearch = ({ onSearch, loading, error }) => {
 
   const handleRetry = () => {
     if (inputValue.trim()) {
+      // Force a new search with the current input
       onSearch(inputValue.trim());
     }
   };

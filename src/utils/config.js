@@ -1,6 +1,12 @@
 export const NETWORK_CONFIG = {
   chainId: 841,
-  rpcUrl: 'https://rpc.mainnet.taraxa.io',
+  rpcUrls: [
+    'https://rpc.mainnet.taraxa.io',
+    'https://taraxa.io/mainnet',
+    'https://rpc.taraxa.network',
+    'https://mainnet-rpc.taraxascan.io'
+  ],
+  rpcUrl: 'https://rpc.mainnet.taraxa.io', // Keep for backward compatibility
   networkName: 'Taraxa Mainnet',
   contracts: {
     registry: '0x5382f0455F6D0DbECf2c61036DbD95b650277B42',
