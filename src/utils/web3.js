@@ -1,13 +1,24 @@
 import { ethers } from 'ethers';
 import { NETWORK_CONFIG } from './config';
 
-// Initialize provider
+// Initialize provider with better error handling
 export const getProvider = () => {
-  if (typeof window !== 'undefined' && window.ethereum) {
-    return new ethers.providers.Web3Provider(window.ethereum);
+  try {
+    if (typeof window !== 'undefined' && window.ethereum) {
+      return new ethers.providers.Web3Provider(window.ethereum);
+    }
+    // Return a JsonRpcProvider for server-side rendering with timeout and retries
+    const provider = new ethers.providers.JsonRpcProvider(NETWORK_CONFIG.rpcUrl);
+    
+    // Set a timeout for RPC requests
+    provider.pollingInterval = 15000; // 15 seconds
+    
+    return provider;
+  } catch (error) {
+    console.error("Failed to initialize provider:", error);
+    // Return a fallback provider as last resort
+    return new ethers.providers.JsonRpcProvider(NETWORK_CONFIG.rpcUrl);
   }
-  // Return a JsonRpcProvider for server-side rendering
-  return new ethers.providers.JsonRpcProvider(NETWORK_CONFIG.rpcUrl);
 };
 
 // Initialize signer (for transactions)
