@@ -114,7 +114,7 @@ const InfoLabel = styled.div`
 `;
 
 const InfoValue = styled.div`
-  color: #000000;
+  color: #ffffff;
   font-size: 15px;
   word-break: break-all;
   font-family: ${props => props.monospace ? '"Roboto Mono", monospace' : 'inherit'};

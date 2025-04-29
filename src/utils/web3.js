@@ -11,10 +11,10 @@ export const getProvider = () => {
     
     // Create a JsonRpcProvider with fallback mechanism
     const createProvider = () => {
-      const provider = new ethers.providers.JsonRpcProvider(NETWORK_CONFIG.rpcUrl);
-      
-      // Set a timeout for RPC requests
-      provider.pollingInterval = 15000; // 15 seconds
+    const provider = new ethers.providers.JsonRpcProvider(NETWORK_CONFIG.rpcUrl);
+    
+    // Set a timeout for RPC requests
+    provider.pollingInterval = 15000; // 15 seconds
       
       // Add custom retry logic for failed requests
       const originalSend = provider.send;
@@ -40,8 +40,8 @@ export const getProvider = () => {
         error.originalError = lastError;
         throw error;
       };
-      
-      return provider;
+    
+    return provider;
     };
     
     return createProvider();

@@ -12,16 +12,16 @@ const Container = styled.div`
   margin: 20px auto;
   padding: 28px;
   border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  background: linear-gradient(to bottom, #ffffff, #f9faff);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(to bottom, #1a1a1a, #121212);
   transition: all 0.4s ease;
-  border: 1px solid rgba(82, 132, 255, 0.1);
+  border: 1px solid rgba(0, 234, 144, 0.1);
   position: relative;
   overflow: hidden;
   animation: ${fadeIn} 0.5s ease-out;
   
   &:hover {
-    box-shadow: 0 15px 35px rgba(82, 132, 255, 0.15);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
     transform: translateY(-3px);
   }
   
@@ -32,7 +32,7 @@ const Container = styled.div`
     left: 0;
     width: 100%;
     height: 6px;
-    background: linear-gradient(90deg, #3b82f6, #5284ff);
+    background: linear-gradient(90deg, #00EA90, #00c070);
   }
 `;
 
@@ -47,9 +47,9 @@ const MessageContent = styled.div`
 const DomainName = styled.h2`
   font-size: 32px;
   font-weight: 800;
-  color: #1f2937;
+  color: #ffffff;
   margin: 0 0 20px 0;
-  background: linear-gradient(90deg, #3b82f6, #5284ff);
+  background: linear-gradient(90deg, #00EA90, #00c070);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   letter-spacing: -0.5px;
@@ -59,12 +59,12 @@ const AvailabilityIcon = styled.div`
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4ade80, #22c55e);
+  background: linear-gradient(135deg, #00EA90, #00c070);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 24px;
-  box-shadow: 0 10px 25px rgba(74, 222, 128, 0.25);
+  box-shadow: 0 10px 25px rgba(0, 234, 144, 0.25);
   
   svg {
     width: 40px;
@@ -76,33 +76,33 @@ const AvailabilityIcon = styled.div`
 const MessageText = styled.p`
   font-size: 18px;
   line-height: 1.6;
-  color: #4b5563;
+  color: #e0e0e0;
   margin-bottom: 24px;
   max-width: 500px;
   
   strong {
-    color: #1f2937;
+    color: #ffffff;
   }
 `;
 
 const InfoBox = styled.div`
-  background-color: rgba(82, 132, 255, 0.08);
+  background-color: rgba(0, 234, 144, 0.08);
   border-radius: 12px;
   padding: 16px 20px;
   margin-top: 16px;
   width: 100%;
   max-width: 500px;
-  border-left: 4px solid #5284ff;
+  border-left: 4px solid #00EA90;
   
   p {
     margin: 0;
     font-size: 15px;
-    color: #4b5563;
+    color: #e0e0e0;
     line-height: 1.5;
   }
   
   strong {
-    color: #1f2937;
+    color: #ffffff;
   }
 `;
 
